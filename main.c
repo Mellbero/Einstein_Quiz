@@ -303,8 +303,8 @@ bool assign(struct Solution* sol, uint_fast8_t rule){
     case 9: //Rule 15
         return apply_rule(sol, MIDDLE, MILK, HOUSE, HOUSE_B, BEVERAGE, BEVERAGE_B, rule);
         break;
-    case 10: //Rule 17
-        return apply_rule_neighbour(sol, CAT, MARLBORO, PET, PET_B, CIGARETTE, CIGARETTE_B, NEIGHBOUR, rule);
+    case 10: //Rule 16
+        return apply_rule_neighbour(sol, WHITE, GREEN, COLOUR, COLOUR_B, COLOUR, COLOUR_B, LEFT, rule);
         break;
     case 11: //Rule 12
         return apply_rule_neighbour(sol, BLUE, NORWEGIAN, COLOUR, COLOUR_B, NATIONALITY, NATIONALITY_B, NEIGHBOUR, rule);
@@ -315,8 +315,8 @@ bool assign(struct Solution* sol, uint_fast8_t rule){
     case 13: //Rule 19
         return apply_rule_neighbour(sol, DUNHILL, HORSE, CIGARETTE, CIGARETTE_B, PET, PET_B, NEIGHBOUR, rule);
         break;
-    case 14: //Rule 16
-        return apply_rule_neighbour(sol, WHITE, GREEN, COLOUR, COLOUR_B, COLOUR, COLOUR_B, LEFT, rule);
+    case 14: //Rule 17
+        return apply_rule_neighbour(sol, CAT, MARLBORO, PET, PET_B, CIGARETTE, CIGARETTE_B, NEIGHBOUR, rule);
         break;
     default:
         break;
