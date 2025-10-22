@@ -8,7 +8,11 @@
 #include <time.h>
 #include "minitrace.h"
 
-//#define TRACE
+#ifdef TRACE
+#define TRACE_PRINT(x) printf("TRACE: %s\n", x)
+#else
+#define TRACE_PRINT(x)
+#endif
 
 #define HOUSES 5
 #define OPTIONS 5

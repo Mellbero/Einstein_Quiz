@@ -13,7 +13,7 @@ uint_fast8_t get_block(uint_fast32_t house, uint_fast8_t column_index){
 }
 
 void printBinary(uint_fast8_t num) {
-    for (int i = sizeof(uint_fast8_t) * 8 - 1; i >= 0; i--) {
+    for (int i = CATEGORIES -1; i >= 0; i--) {
         printf("%d", (num >> i) & 1);
     }
     printf("\n");
@@ -23,42 +23,47 @@ uint_fast8_t find_set_bit_pos(uint_fast32_t house, uint_fast8_t column_index) {
     uint_fast8_t block = get_block(house, column_index);
     for (uint_fast8_t house_i = 0; house_i < HOUSES; ++house_i) {
         if (block & (1u << house_i))
-            return house_i;  // return the position of the bit (0 = least significant)
+            return house_i;
     }
-    return -1; // if no bit is set
+    return -1;
 }
 
-void print_sol(struct Solution sol){
-    const char *words[][5] = {{" FIFTH", " FOURTH", " MIDDLE", " SECOND", " FIRST"},
-                            {" SWEDE", " BRITT", " GERMAN", " DANE", " NORWEGIAN"},
-                            {" YELLOW", " WHITE", " BLUE", " GREEN", " RED"},
-                            {" WATER", " MILK", " BEER", " COFFEE", " TEA"},
-                            {" PALLMALL", " MARLBORO", " DUNHILL", " WINFIELD", " ROTHMANNS"},
-                            {" FISH", " HORSE", " CAT", " BIRD", " DOG"}};
+void print_sol(struct Solution sol) {
+    const char *words[][5] = {
+        {"FIFTH", "FOURTH", "MIDDLE", "SECOND", "FIRST"},
+        {"SWEDE", "BRITT", "GERMAN", "DANE", "NORWEGIAN"},
+        {"YELLOW", "WHITE", "BLUE", "GREEN", "RED"},
+        {"WATER", "MILK", "BEER", "COFFEE", "TEA"},
+        {"PALLMALL", "MARLBORO", "DUNHILL", "WINFIELD", "ROTHMANNS"},
+        {"FISH", "HORSE", "CAT", "BIRD", "DOG"}
+    };
 
-    for(uint_fast8_t house_i = 0; house_i < HOUSES; ++house_i){
-        char house[100] = "";
-        for(uint_fast8_t categorie_i = 0; categorie_i < CATEGORIES; ++categorie_i){
+    printf("%-8s %-12s %-8s %-8s %-12s %-6s\n", 
+           "House", "Nationality", "Color", "Drink", "Cigarette", "Pet");
+    printf("---------------------------------------------------------------\n");
+
+    for(uint_fast8_t house_i = 0; house_i < HOUSES; ++house_i) {
+        const char *columns[CATEGORIES];
+
+        for(uint_fast8_t categorie_i = 0; categorie_i < CATEGORIES; ++categorie_i) {
             uint_fast8_t p = find_set_bit_pos(sol.houses[house_i], (CATEGORIES-1)-categorie_i);
-            strncat(house, words[categorie_i][p], sizeof(house) - strlen(house) - 1);
+            columns[categorie_i] = words[categorie_i][p];
         }
-        printf("%s\n", house);
+
+        printf("%-8s %-12s %-8s %-8s %-12s %-6s\n",
+               columns[0], columns[1], columns[2], columns[3], columns[4], columns[5]);
     }
+
     printf("\n");
 
-    printf("completion a: ");
-    printBinary(sol.completion[0]);
-    printf("completion b: ");
-    printBinary(sol.completion[1]);
-    printf("completion c: ");
-    printBinary(sol.completion[2]);
-    printf("completion d: ");
-    printBinary(sol.completion[3]);
-    printf("completion e: ");
-    printBinary(sol.completion[4]);
+    printf("completion a: "); printBinary(sol.completion[0]);
+    printf("completion b: "); printBinary(sol.completion[1]);
+    printf("completion c: "); printBinary(sol.completion[2]);
+    printf("completion d: "); printBinary(sol.completion[3]);
+    printf("completion e: "); printBinary(sol.completion[4]);
     printf("\n");
-
 }
+
 
 bool apply_rule(struct Solution* end_sol, uint_fast32_t to_search, uint_fast32_t to_swap, uint_fast8_t to_search_column, uint_fast32_t to_search_column_b, uint_fast8_t to_swap_column, uint_fast32_t to_swap_column_b, uint_fast8_t rule){
     #ifdef TRACE
@@ -73,8 +78,9 @@ bool apply_rule(struct Solution* end_sol, uint_fast32_t to_search, uint_fast32_t
     }
     for(uint_fast8_t to_search_i = 0; to_search_i < HOUSES; ++to_search_i){
         if(to_search_init_i != to_search_i){
+            //Check if to_search_i block has already beed checked.
             if((sol.completion[to_search_i] & to_search_column_b) != 0) continue;
-            //If the to_search block is already striked of it cant be swapped. Inner loop will thus be run only once
+            //If the to_search_init_i block has already been checked it cant be swapped. Inner loop will thus be run only once
             if((sol.completion[to_search_init_i] & to_search_column_b) == 0){
                 swap_blocks(&sol.houses[to_search_init_i], &sol.houses[to_search_i], to_search_column);
             }else{
@@ -83,15 +89,15 @@ bool apply_rule(struct Solution* end_sol, uint_fast32_t to_search, uint_fast32_t
         }
         for(uint_fast8_t to_swap_i = 0; to_swap_i < HOUSES; ++to_swap_i){
             if(to_search_i != to_swap_i){
+                //Check if to_swap_i block has already beed checked.
                 if((sol.completion[to_swap_i] & to_swap_column_b) != 0) continue;
-                //If current block has already been striked, check if combination is correct and the break. Cant swap with anyone
+                //If the to_search_i block has already been checked it cant be swapped. Inner loop will thus be run only once
                 if((sol.completion[to_search_i] & to_swap_column_b) == 0){
                     swap_blocks(&sol.houses[to_search_i], &sol.houses[to_swap_i], to_swap_column);
                 }else{
                     to_swap_i -= 1;
                 }
             }
-            //If the block i want to swap with has already been striked off dont swap
             //check
             if((sol.houses[to_search_i] & to_swap) != 0){
                 bool clear_swap = true;
@@ -138,12 +144,10 @@ bool apply_rule_neighbour(struct Solution* end_sol, uint_fast32_t to_search_1, u
             to_search_1_init_i = to_search_f_i;
         }
         if((sol.houses[to_search_f_i] & to_search_2) != 0){
-            //to_search_2_init_i = (OPTIONS -1 - find_set_bit_pos(to_search_f_i, to_search_2_column));
             to_search_2_init_i = to_search_f_i;
         }
     }
     for(uint_fast8_t to_search_1_i = 0; to_search_1_i < HOUSES; ++to_search_1_i){
-        //print_sol(sol);
         if(to_search_1_init_i != to_search_1_i){
             if((sol.completion[to_search_1_i] & to_search_1_column_b) != 0) continue;
             if(to_search_1_i == to_search_2_init_i) continue;
@@ -154,7 +158,7 @@ bool apply_rule_neighbour(struct Solution* end_sol, uint_fast32_t to_search_1, u
             }
         }
         for(uint_fast8_t to_search_1_hn_i = 0; to_search_1_hn_i < HOUSES; ++to_search_1_hn_i){
-            //print_sol(sol);
+
             if(to_search_1_i != to_search_1_hn_i){
                 if((sol.completion[to_search_1_hn_i] & HOUSE_B) != 0) continue;
                 if((OPTIONS -1 - find_set_bit_pos(sol.houses[to_search_1_hn_i], HOUSE)) == 0 && neighbour == LEFT) continue;
@@ -166,7 +170,7 @@ bool apply_rule_neighbour(struct Solution* end_sol, uint_fast32_t to_search_1, u
                 }
             }
             for(uint_fast8_t to_search_2_i = 0; to_search_2_i < HOUSES; ++to_search_2_i){
-                //print_sol(sol);
+    
                 if(to_search_2_init_i != to_search_2_i){
                     if((sol.completion[to_search_2_i] & to_search_2_column_b) != 0) continue;
                     if(to_search_2_i == to_search_1_i || to_search_2_i == to_search_1_init_i) continue;
@@ -178,7 +182,7 @@ bool apply_rule_neighbour(struct Solution* end_sol, uint_fast32_t to_search_1, u
                 }
 
                 for(uint_fast8_t to_search_2_hn_i = 0; to_search_2_hn_i < HOUSES; ++to_search_2_hn_i){
-                    //print_sol(sol);
+        
                     if(to_search_2_i != to_search_2_hn_i){
                         if((sol.completion[to_search_2_hn_i] & HOUSE_B) != 0) continue;
                         if(to_search_2_hn_i == to_search_1_hn_i || to_search_2_hn_i == to_search_1_init_i) continue;
@@ -206,7 +210,7 @@ bool apply_rule_neighbour(struct Solution* end_sol, uint_fast32_t to_search_1, u
                             }
                         }
                     }
-                    //print_sol(sol);
+        
                     if(check){
                         bool clear_to_search_1 = true;
                         bool clear_to_search_2 = true;
@@ -317,7 +321,6 @@ bool assign(struct Solution* sol, uint_fast8_t rule){
     default:
         break;
     }
-    //Wenn was zurückgesendet wird dann is es eine neue sol wenn nicht dann soll die alte verwendet werden
     return true;
 }
 
@@ -348,13 +351,12 @@ int main() {
     double elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000;
     printf("Calculation time: %.6f milliseconds\n\n", elapsed);
 
-    
     start = clock();
     
     if(state == true){
-        printf("True\n");
+        printf("True\n\n");
     }else{
-        printf("False\n");
+        printf("False\n\n");
     }
     
     print_sol(sol);
